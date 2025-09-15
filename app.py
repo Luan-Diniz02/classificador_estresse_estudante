@@ -17,25 +17,22 @@ import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
-# import plotly.express as px
-# import plotly.graph_objects as go
-# import plotly.utils
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
 # Importar o módulo do classificador
 try:
-    from classificador_module import ClassificadorEstresse
+    from src.classificador_module import ClassificadorEstresse
 except ImportError:
     print("Módulo classificador_module não encontrado. Execute primeiro o script principal.")
 
-app = Flask(__name__)
-app.secret_key = 'academic_stress_classifier_secret_key_2025'
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max-file-size
+# Importar configurações
+from config import get_config
 
-# Criar diretório de uploads se não existir
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+app = Flask(__name__)
+config_class = get_config()
+app.config.from_object(config_class)
+config_class.init_app(app)
 
 # Variável global para armazenar o modelo treinado
 classificador = None

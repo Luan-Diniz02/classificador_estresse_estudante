@@ -49,23 +49,35 @@ Uma aplicação web Flask para visualização e uso do classificador de estresse
 ## 📁 Estrutura do Projeto
 
 ```
-atividade_02_09/
+classificador_estresse_estudante/
 ├── app.py                      # Aplicação Flask principal
-├── classificador_module.py     # Módulo do classificador ML
-├── atividade_classificador.py  # Script original do classificador
+├── config.py                   # Configurações centralizadas
 ├── requirements.txt            # Dependências Python
-├── README.md                   # Documentação
-├── templates/                  # Templates HTML
-│   ├── base.html              # Template base
-│   ├── dashboard.html         # Dashboard principal
-│   ├── predict.html           # Formulário de predição
-│   └── upload.html            # Upload de arquivos
-├── static/                    # Arquivos estáticos
+├── run.bat                     # Script de execução
+├── .env.example               # Exemplo de variáveis de ambiente
+├── src/                       # Código fonte
+│   ├── __init__.py
+│   └── classificador_module.py # Módulo do classificador ML
+├── scripts/                   # Scripts auxiliares
+│   └── exercicio_original/
+│       └── atividade_classificador.py # Script original do classificador
+├── templates/                 # Templates HTML
+│   ├── base.html             # Template base
+│   ├── dashboard.html        # Dashboard principal
+│   ├── predict.html          # Formulário de predição
+│   └── upload.html           # Upload de arquivos
+├── static/                   # Arquivos estáticos
 │   ├── css/
-│   │   └── style.css         # Estilos customizados
+│   │   └── style.css        # Estilos customizados
 │   └── js/
-│       └── main.js           # JavaScript principal
-└── uploads/                   # Diretório de uploads (criado automaticamente)
+│       └── main.js          # JavaScript principal
+├── models/                   # Modelos treinados
+│   └── model.pkl
+├── uploads/                  # Diretório de uploads (criado automaticamente)
+├── docs/                     # Documentação
+│   ├── README.md
+│   └── ESTRUTURA_FINAL.md
+└── __pycache__/             # Cache Python (auto-gerado)
 ```
 
 ## 🔧 Instalação e Configuração

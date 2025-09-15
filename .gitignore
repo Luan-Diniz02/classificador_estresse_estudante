@@ -19,6 +19,9 @@ venv/
 env/
 ENV/
 
+# Arquivos de configuração sensíveis
+.env
+
 # Arquivos do sistema
 .DS_Store
 Thumbs.db
