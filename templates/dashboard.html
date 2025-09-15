@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Classificador de Estresse Acadêmico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-speedometer2"></i>
+            Dashboard do Classificador de Estresse Acadêmico
+        </h1>
+    </div>
+</div>
+
+{% if not model_trained %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning" role="alert">
+            <h4 class="alert-heading">
+                <i class="bi bi-exclamation-triangle"></i>
+                Modelo não treinado
+            </h4>
+            <p>O modelo de classificação ainda não foi treinado. Para usar todas as funcionalidades, é necessário treinar o modelo primeiro.</p>
+            <hr>
+            <a class="btn btn-primary" href="{{ url_for('train_model') }}">
+                <i class="bi bi-gear"></i>
+                Treinar Modelo Agora
+            </a>
+        </div>
+    </div>
+</div>
+{% else %}
+
+<!-- Métricas do Modelo -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Acurácia</h6>
+                        <h3 class="mb-0">{{ "%.2f%%" | format(metrics.accuracy * 100) }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-bullseye fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Features</h6>
+                        <h3 class="mb-0">{{ metrics.feature_names|length }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-list-ul fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Precision Média</h6>
+                        <h3 class="mb-0">{{ "%.2f%%" | format(metrics.classification_report['macro avg'].precision * 100) }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-precision fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Recall Médio</h6>
+                        <h3 class="mb-0">{{ "%.2f%%" | format(metrics.classification_report['macro avg'].recall * 100) }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-arrow-repeat fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row">
+    <!-- Matriz de Confusão -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-grid-3x3"></i>
+                    Matriz de Confusão
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if confusion_matrix %}
+                    <img src="data:image/png;base64,{{ confusion_matrix }}" 
+                         class="img-fluid" alt="Matriz de Confusão">
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-exclamation-circle fs-1"></i>
+                        <p>Gráfico não disponível</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Importância das Features -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-bar-chart"></i>
+                    Importância das Features
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if feature_importance %}
+                    <img src="data:image/png;base64,{{ feature_importance }}" 
+                         class="img-fluid" alt="Importância das Features">
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-exclamation-circle fs-1"></i>
+                        <p>Gráfico não disponível</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Relatório Detalhado -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-file-text"></i>
+                    Relatório de Classificação Detalhado
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Classe</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1-Score</th>
+                                <th>Support</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for class_name, class_metrics in metrics.classification_report.items() %}
+                                {% if class_name not in ['accuracy', 'macro avg', 'weighted avg'] %}
+                                <tr>
+                                    <td><strong>{{ class_name }}</strong></td>
+                                    <td>{{ "%.3f" | format(class_metrics.precision) }}</td>
+                                    <td>{{ "%.3f" | format(class_metrics.recall) }}</td>
+                                    <td>{{ "%.3f" | format(class_metrics['f1-score']) }}</td>
+                                    <td>{{ class_metrics.support }}</td>
+                                </tr>
+                                {% endif %}
+                            {% endfor %}
+                            <tr class="table-secondary">
+                                <td><strong>Macro Avg</strong></td>
+                                <td>{{ "%.3f" | format(metrics.classification_report['macro avg'].precision) }}</td>
+                                <td>{{ "%.3f" | format(metrics.classification_report['macro avg'].recall) }}</td>
+                                <td>{{ "%.3f" | format(metrics.classification_report['macro avg']['f1-score']) }}</td>
+                                <td>{{ metrics.classification_report['macro avg'].support }}</td>
+                            </tr>
+                            <tr class="table-secondary">
+                                <td><strong>Weighted Avg</strong></td>
+                                <td>{{ "%.3f" | format(metrics.classification_report['weighted avg'].precision) }}</td>
+                                <td>{{ "%.3f" | format(metrics.classification_report['weighted avg'].recall) }}</td>
+                                <td>{{ "%.3f" | format(metrics.classification_report['weighted avg']['f1-score']) }}</td>
+                                <td>{{ metrics.classification_report['weighted avg'].support }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+<!-- Ações Rápidas -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning"></i>
+                    Ações Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-calculator"></i>
+                            Fazer Predição
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('upload_file') }}" class="btn btn-info btn-lg w-100">
+                            <i class="bi bi-cloud-upload"></i>
+                            Upload CSV
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('train_model') }}" class="btn btn-warning btn-lg w-100">
+                            <i class="bi bi-gear"></i>
+                            Re-treinar Modelo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

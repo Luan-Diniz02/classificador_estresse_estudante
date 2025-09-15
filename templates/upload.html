@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}Upload CSV - Classificador de Estresse Acadêmico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-cloud-upload"></i>
+            Upload de Arquivo CSV para Predições em Lote
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-file-earmark-arrow-up"></i>
+                    Enviar Arquivo
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Selecione um arquivo CSV</label>
+                        <input class="form-control" type="file" id="file" name="file" accept=".csv" required>
+                        <div class="form-text">
+                            Apenas arquivos CSV são aceitos. Tamanho máximo: 16MB
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-cloud-upload"></i>
+                            Fazer Upload e Processar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    Formato do Arquivo
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small">O arquivo CSV deve conter as seguintes colunas:</p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Coluna</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Your Academic Stage</td><td>Estágio acadêmico (high school, undergraduate, post-graduate)</td></tr>
+                            <tr><td>Peer pressure</td><td>Pressão dos colegas (1-5)</td></tr>
+                            <tr><td>Academic pressure from your home</td><td>Pressão acadêmica de casa (1-5)</td></tr>
+                            <tr><td>Study Environment</td><td>Ambiente de estudo (Peaceful, Noisy, disrupted)</td></tr>
+                            <tr><td>What coping strategy you use as a student?</td><td>Estratégia de enfrentamento (3 opções)</td></tr>
+                            <tr><td>Do you have any bad habits like smoking, drinking on a daily basis?</td><td>Maus hábitos (No, Yes, prefer not to say)</td></tr>
+                            <tr><td>What would you rate the academic  competition in your student life</td><td>Competição acadêmica (1-5)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <small>
+                        <i class="bi bi-lightbulb"></i>
+                        <strong>Dica:</strong> Você pode baixar um modelo de arquivo CSV da seção de exemplos.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        {% if results %}
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-check-circle"></i>
+                    Resultados do Processamento
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="alert alert-success">
+                        <strong>Sucesso!</strong> {{ total_predictions }} predições foram realizadas.
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Primeiros 50 resultados:</h6>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm table-striped">
+                            <thead class="table-dark sticky-top">
+                                <tr>
+                                    <th>#</th>
+                                    {% for key in results[0].keys() %}
+                                        {% if key != 'Predicted_Stress_Level' %}
+                                        <th>{{ key }}</th>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <th class="bg-warning">Predição</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i, row in results|enumerate %}
+                                <tr>
+                                    <td>{{ i + 1 }}</td>
+                                    {% for key, value in row.items() %}
+                                        {% if key != 'Predicted_Stress_Level' %}
+                                        <td>{{ value }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <td class="fw-bold">
+                                        <span class="badge bg-{% if row.Predicted_Stress_Level <= 2 %}success{% elif row.Predicted_Stress_Level <= 5 %}warning{% else %}danger{% endif %}">
+                                            {{ row.Predicted_Stress_Level }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary" onclick="downloadResults()">
+                        <i class="bi bi-download"></i>
+                        Baixar Resultados Completos (CSV)
+                    </button>
+                    <a href="{{ url_for('upload_file') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Processar Outro Arquivo
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-question-circle"></i>
+                    Como Usar
+                </h6>
+            </div>
+            <div class="card-body">
+                <ol class="mb-3">
+                    <li>Prepare seu arquivo CSV com os dados dos estudantes</li>
+                    <li>Certifique-se de que as colunas estão no formato correto</li>
+                    <li>Selecione o arquivo usando o botão acima</li>
+                    <li>Clique em "Fazer Upload e Processar"</li>
+                    <li>Aguarde o processamento e visualize os resultados</li>
+                </ol>
+                
+                <div class="alert alert-warning">
+                    <small>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Importante:</strong> O modelo deve estar treinado antes de processar arquivos.
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-download"></i>
+                    Arquivo de Exemplo
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small">Baixe um arquivo de exemplo para entender o formato esperado:</p>
+                <div class="d-grid">
+                    <button type="button" class="btn btn-outline-info" onclick="downloadSample()">
+                        <i class="bi bi-file-earmark-arrow-down"></i>
+                        Baixar Exemplo (CSV)
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if results %}
+<!-- Estatísticas dos Resultados -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up"></i>
+                    Estatísticas dos Resultados
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="resultStats"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Validação do arquivo antes do upload
+    document.getElementById('file').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const fileSize = file.size / 1024 / 1024; // MB
+            const fileName = file.name.toLowerCase();
+            
+            if (!fileName.endsWith('.csv')) {
+                alert('Por favor, selecione apenas arquivos CSV.');
+                e.target.value = '';
+                return;
+            }
+            
+            if (fileSize > 16) {
+                alert('O arquivo é muito grande. Tamanho máximo: 16MB');
+                e.target.value = '';
+                return;
+            }
+        }
+    });
+    
+    // Indicador de loading no upload
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processando...';
+        
+        // Simular tempo mínimo de processamento para UX
+        setTimeout(() => {
+            // O formulário já foi enviado, mas caso haja erro, restaura o botão
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }, 30000); // 30 segundos timeout
+    });
+    
+    {% if results %}
+    // Calcular e exibir estatísticas
+    const results = {{ results | tojson }};
+    const predictions = results.map(r => r.Predicted_Stress_Level);
+    
+    // Contar ocorrências por nível de estresse
+    const counts = {};
+    predictions.forEach(pred => {
+        counts[pred] = (counts[pred] || 0) + 1;
+    });
+    
+    // Criar gráfico simples
+    let statsHtml = '<div class="row">';
+    
+    Object.keys(counts).sort().forEach(level => {
+        const count = counts[level];
+        const percentage = ((count / predictions.length) * 100).toFixed(1);
+        const badgeClass = level <= 2 ? 'success' : level <= 5 ? 'warning' : 'danger';
+        
+        statsHtml += `
+            <div class="col-md-3 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <span class="badge bg-${badgeClass}">Nível ${level}</span>
+                        </h5>
+                        <p class="card-text">
+                            <strong>${count}</strong> estudantes<br>
+                            <small class="text-muted">${percentage}%</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    statsHtml += '</div>';
+    document.getElementById('resultStats').innerHTML = statsHtml;
+    {% endif %}
+    
+    // Função para baixar resultados
+    function downloadResults() {
+        {% if results %}
+        const results = {{ results | tojson }};
+        const csv = convertToCSV(results);
+        downloadCSV(csv, 'predicoes_estresse_academico.csv');
+        {% endif %}
+    }
+    
+    // Função para baixar arquivo de exemplo
+    function downloadSample() {
+        const sampleData = [
+            {
+                'Your Academic Stage': 'undergraduate',
+                'Peer pressure': 3,
+                'Academic pressure from your home': 4,
+                'Study Environment': 'Peaceful',
+                'What coping strategy you use as a student?': 'Social support (friends, family)',
+                'Do you have any bad habits like smoking, drinking on a daily basis?': 'No',
+                'What would you rate the academic  competition in your student life': 3
+            },
+            {
+                'Your Academic Stage': 'high school',
+                'Peer pressure': 4,
+                'Academic pressure from your home': 5,
+                'Study Environment': 'Noisy',
+                'What coping strategy you use as a student?': 'Emotional breakdown (crying a lot)',
+                'Do you have any bad habits like smoking, drinking on a daily basis?': 'prefer not to say',
+                'What would you rate the academic  competition in your student life': 4
+            }
+        ];
+        
+        const csv = convertToCSV(sampleData);
+        downloadCSV(csv, 'exemplo_dados_estresse_academico.csv');
+    }
+    
+    // Função utilitária para converter JSON para CSV
+    function convertToCSV(data) {
+        if (!data.length) return '';
+        
+        const headers = Object.keys(data[0]);
+        const csvHeaders = headers.join(',');
+        const csvRows = data.map(row => 
+            headers.map(header => row[header]).join(',')
+        );
+        
+        return [csvHeaders, ...csvRows].join('\n');
+    }
+    
+    // Função utilitária para baixar CSV
+    function downloadCSV(csv, filename) {
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+</script>
+{% endblock %}

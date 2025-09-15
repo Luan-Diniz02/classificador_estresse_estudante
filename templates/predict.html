@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Predição Individual - Classificador de Estresse Acadêmico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-calculator"></i>
+            Predição Individual de Estresse Acadêmico
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-form"></i>
+                    Formulário de Predição
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="predictionForm">
+                    <div class="row">
+                        <!-- Campos baseados no dataset REAL de estresse acadêmico -->
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="Your Academic Stage" class="form-label">Seu Estágio Acadêmico</label>
+                            <select class="form-select" id="academic_stage" name="Your Academic Stage" required>
+                                <option value="">Selecione...</option>
+                                <option value="high school">Ensino Médio</option>
+                                <option value="undergraduate">Graduação</option>
+                                <option value="post-graduate">Pós-graduação</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="Peer pressure" class="form-label">Pressão dos Colegas</label>
+                            <select class="form-select" id="peer_pressure" name="Peer pressure" required>
+                                <option value="">Selecione...</option>
+                                <option value="1">1 - Muito baixa</option>
+                                <option value="2">2 - Baixa</option>
+                                <option value="3">3 - Moderada</option>
+                                <option value="4">4 - Alta</option>
+                                <option value="5">5 - Muito alta</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="Academic pressure from your home" class="form-label">Pressão Acadêmica de Casa</label>
+                            <select class="form-select" id="home_pressure" name="Academic pressure from your home" required>
+                                <option value="">Selecione...</option>
+                                <option value="1">1 - Muito baixa</option>
+                                <option value="2">2 - Baixa</option>
+                                <option value="3">3 - Moderada</option>
+                                <option value="4">4 - Alta</option>
+                                <option value="5">5 - Muito alta</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="Study Environment" class="form-label">Ambiente de Estudo</label>
+                            <select class="form-select" id="study_env" name="Study Environment" required>
+                                <option value="">Selecione...</option>
+                                <option value="Peaceful">Tranquilo</option>
+                                <option value="Noisy">Barulhento</option>
+                                <option value="disrupted">Interrompido</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-12 mb-3">
+                            <label for="What coping strategy you use as a student?" class="form-label">Qual estratégia de enfrentamento você usa como estudante?</label>
+                            <select class="form-select" id="coping_strategy" name="What coping strategy you use as a student?" required>
+                                <option value="">Selecione...</option>
+                                <option value="Analyze the situation and handle it with intellect">Analiso a situação e lido com inteligência</option>
+                                <option value="Social support (friends, family)">Suporte social (amigos, família)</option>
+                                <option value="Emotional breakdown (crying a lot)">Colapso emocional (chorar muito)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="Do you have any bad habits like smoking, drinking on a daily basis?" class="form-label">Você tem maus hábitos como fumar, beber diariamente?</label>
+                            <select class="form-select" id="bad_habits" name="Do you have any bad habits like smoking, drinking on a daily basis?" required>
+                                <option value="">Selecione...</option>
+                                <option value="No">Não</option>
+                                <option value="Yes">Sim</option>
+                                <option value="prefer not to say">Prefiro não dizer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="What would you rate the academic  competition in your student life" class="form-label">Como você avalia a competição acadêmica na sua vida estudantil?</label>
+                            <select class="form-select" id="competition" name="What would you rate the academic  competition in your student life" required>
+                                <option value="">Selecione...</option>
+                                <option value="1">1 - Muito baixa</option>
+                                <option value="2">2 - Baixa</option>
+                                <option value="3">3 - Moderada</option>
+                                <option value="4">4 - Alta</option>
+                                <option value="5">5 - Muito alta</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="reset" class="btn btn-secondary me-md-2">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            Limpar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-calculator"></i>
+                            Fazer Predição
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        {% if result %}
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-check-circle"></i>
+                    Resultado da Predição
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="mb-3">
+                        <span class="badge bg-primary fs-4 p-3">
+                            Nível de Estresse: {{ result.prediction }}
+                        </span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Confiança da Predição:</h6>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ (result.probability.max() * 100)|round(1) }}%">
+                                {{ "%.1f%%" | format(result.probability.max() * 100) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="bi bi-info-circle"></i>
+                            Esta predição é baseada nos dados fornecidos e deve ser interpretada como uma estimativa estatística.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Interpretação dos Níveis</h6>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div class="mb-2">
+                        <span class="badge bg-success">1-2</span> Baixo estresse
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-warning">3</span> Estresse moderado
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-danger">4-5</span> Alto estresse
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    Como Usar
+                </h6>
+            </div>
+            <div class="card-body">
+                <ol class="small">
+                    <li>Preencha todos os campos do formulário</li>
+                    <li>Selecione as opções que melhor descrevem sua situação</li>
+                    <li>Clique em "Fazer Predição"</li>
+                    <li>O resultado aparecerá nesta área</li>
+                </ol>
+                
+                <div class="alert alert-warning mt-3">
+                    <small>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Aviso:</strong> Esta ferramenta é apenas para fins educacionais e não substitui aconselhamento profissional.
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Validação do formulário
+    document.getElementById('predictionForm').addEventListener('submit', function(e) {
+        const form = e.target;
+        const requiredFields = form.querySelectorAll('[required]');
+        let allFilled = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value) {
+                allFilled = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!allFilled) {
+            e.preventDefault();
+            alert('Por favor, preencha todos os campos obrigatórios.');
+        }
+    });
+    
+    // Remover classe de erro ao preencher campo
+    document.querySelectorAll('select, input').forEach(field => {
+        field.addEventListener('change', function() {
+            this.classList.remove('is-invalid');
+        });
+    });
+</script>
+{% endblock %}

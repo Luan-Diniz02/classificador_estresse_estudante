@@ -1,0 +1,34 @@
+# Arquivos Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Arquivos de modelo salvos temporariamente
+*.pkl.tmp
+
+# Arquivos de upload
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+*.log
+
+# Arquivos de ambiente virtual
+venv/
+env/
+ENV/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Arquivos de teste
+test_*.py
+*_test.py
+check_*.py
+analyze_*.py
