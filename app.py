@@ -221,7 +221,12 @@ def create_confusion_matrix_plot():
         
         # Criar o gráfico com matplotlib
         plt.figure(figsize=(8, 6))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+        
+        # Labels corretos (1 a 5 em vez de 0 a 4)
+        class_labels = [str(i) for i in range(1, 6)]
+        
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                   xticklabels=class_labels, yticklabels=class_labels)
         plt.title('Matriz de Confusão')
         plt.ylabel('Classe Verdadeira')
         plt.xlabel('Classe Prevista')

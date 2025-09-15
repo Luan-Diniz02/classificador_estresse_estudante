@@ -170,7 +170,8 @@ class ClassificadorEstresse:
             raise ValueError("Modelo não está treinado")
         
         prediction = self.model.predict(input_data)
-        return prediction[0]
+        # Converter de volta para escala 1-5 (modelo usa 0-4)
+        return prediction[0] + 1
     
     def predict_probability(self, input_data):
         """Obter probabilidades de predição"""
@@ -204,7 +205,8 @@ class ClassificadorEstresse:
         df = df[self.feature_names]
         
         predictions = self.model.predict(df)
-        return predictions
+        # Converter de volta para escala 1-5 (modelo usa 0-4)
+        return predictions + 1
     
     def get_metrics(self):
         """Obter métricas de avaliação do modelo"""
@@ -212,7 +214,15 @@ class ClassificadorEstresse:
             return None
         
         accuracy = accuracy_score(self.y_test, self.y_pred)
-        classification_rep = classification_report(self.y_test, self.y_pred, output_dict=True, zero_division=0)
+        
+        # Mapear labels de volta para 1-5 para exibição
+        target_names = [str(i) for i in range(1, 6)]
+        classification_rep = classification_report(
+            self.y_test, self.y_pred, 
+            output_dict=True, 
+            zero_division=0,
+            target_names=target_names
+        )
         
         metrics = {
             'accuracy': float(accuracy),
